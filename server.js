@@ -17,17 +17,31 @@ const server = net.createServer((socket) => {
     let nickname = null;
     let currentRoom = "General";
     let isAdmin = false;
+    let buffer = "";
 
     socket.on("data", (data) => {
+        buffer += data.toString();
 
-        const message = data.toString().trim();
+        const messages = buffer.split("\n");
+
+        buffer = messages.pop();
+
+        for (const message of messages) {
+
+            const cleanMessage = message.trim();
+
+            if (cleanMessage === "") {
+                continue;
+            }
+
+        
 
         // ---------------- NICKNAME ----------------
 
         if (nickname === null) {
 
             const alreadyExists = clients.some(
-                (client) => client.nickname === message
+                (client) => client.nickname === cleanMessage
             );
 
             if (alreadyExists) {
@@ -35,7 +49,7 @@ const server = net.createServer((socket) => {
                 return;
             }
 
-            nickname = message;
+            nickname = cleanMessage;
 
             // First user becomes admin
             if (clients.length === 0) {
@@ -69,7 +83,7 @@ const server = net.createServer((socket) => {
 
         // ---------------- HELP ----------------
 
-        if (message === "/help") {
+        if (cleanMessage === "/help") {
 
             socket.write(
                 "\nAvailable commands:\n" +
@@ -88,7 +102,7 @@ const server = net.createServer((socket) => {
 
         // ---------------- ROOMS ----------------
 
-        if (message === "/rooms") {
+        if (cleanMessage === "/rooms") {
 
             socket.write(
                 "\nAvailable rooms:\n" +
@@ -102,9 +116,9 @@ const server = net.createServer((socket) => {
 
         // ---------------- JOIN ROOM ----------------
 
-        if (message.startsWith("/join ")) {
+        if (cleanMessage.startsWith("/join ")) {
 
-            const roomName = message.substring(6).trim();
+            const roomName = cleanMessage.substring(6).trim();
 
             if (!rooms[roomName]) {
                 socket.write(
@@ -145,7 +159,7 @@ const server = net.createServer((socket) => {
 
         // ---------------- LEAVE ROOM ----------------
 
-        if (message === "/leave") {
+        if (cleanMessage === "/leave") {
 
             if (currentRoom === "General") {
                 socket.write("You are already in General room.\n");
@@ -179,7 +193,7 @@ const server = net.createServer((socket) => {
 
         // ---------------- USERS ----------------
 
-        if (message === "/users") {
+        if (cleanMessage === "/users") {
 
             if (!isAdmin) {
                 socket.write("Access denied. Admin only.\n");
@@ -204,14 +218,14 @@ const server = net.createServer((socket) => {
 
         // ---------------- KICK ----------------
 
-        if (message.startsWith("/kick ")) {
+        if (cleanMessage.startsWith("/kick ")) {
 
             if (!isAdmin) {
                 socket.write("Access denied. Admin only.\n");
                 return;
             }
 
-            const targetNickname = message.substring(6).trim();
+            const targetNickname = cleanMessage.substring(6).trim();
 
             if (targetNickname === nickname) {
                 socket.write("You cannot kick yourself.\n");
@@ -262,14 +276,14 @@ const server = net.createServer((socket) => {
 
         // ---------------- ANNOUNCE ----------------
 
-        if (message.startsWith("/announce ")) {
+        if (cleanMessage.startsWith("/announce ")) {
 
             if (!isAdmin) {
                 socket.write("Access denied. Admin only.\n");
                 return;
             }
 
-            const announcement = message.substring(10).trim();
+            const announcement = cleanMessage.substring(10).trim();
 
             if (announcement === "") {
                 socket.write("Please enter an announcement message.\n");
@@ -293,7 +307,7 @@ const server = net.createServer((socket) => {
 
         // ---------------- QUIT ----------------
 
-        if (message === "/quit") {
+        if (cleanMessage === "/quit") {
 
             socket.write("Goodbye! You have left the chat.\n");
 
@@ -305,7 +319,7 @@ const server = net.createServer((socket) => {
         // ---------------- NORMAL CHAT ----------------
 
         console.log(
-            `[${currentRoom}] ${nickname}: ${message}`
+            `[${currentRoom}] ${nickname}: ${cleanMessage}\n`
         );
 
         clients.forEach((client) => {
@@ -313,12 +327,13 @@ const server = net.createServer((socket) => {
             if (client.room === currentRoom) {
 
                 client.socket.write(
-                    `[${currentRoom}] ${nickname}: ${message}\n`
+                    `[${currentRoom}] ${nickname}: ${cleanMessage}\n`
                 );
 
             }
 
         });
+        }
 
     });
 
@@ -350,7 +365,6 @@ const server = net.createServer((socket) => {
     });
 
 });
-
 server.listen(5000, () => {
     console.log("TCP Server is running on port 5000");
 });

@@ -18,7 +18,7 @@ const rl = readline.createInterface({
 
 rl.on("line", (message) => {
 
-    client.write(message);
+    client.write(message + "\n");
 
 });
 
