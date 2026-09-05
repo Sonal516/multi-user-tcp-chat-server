@@ -79,6 +79,7 @@ const server = net.createServer((socket) => {
                 "/users - Show connected users (Admin)\n" +
                 "/kick <nickname> - Kick a user (Admin)\n" +
                 "/announce <message> - Send announcement (Admin)\n" +
+                "/quit - Leave the chat\n" +
                 "/help - Show commands\n\n"
             );
 
@@ -286,6 +287,17 @@ const server = net.createServer((socket) => {
             console.log(
                 `Admin announcement: ${announcement}`
             );
+
+            return;
+        }
+
+        // ---------------- QUIT ----------------
+
+        if (message === "/quit") {
+
+            socket.write("Goodbye! You have left the chat.\n");
+
+            socket.end();
 
             return;
         }
