@@ -16,7 +16,7 @@ const server = net.createServer((socket) => {
 
         console.log("Client says:", message);
 
-        // Send message to all connected clients
+        // Broadcast message to all connected clients
         clients.forEach((client) => {
             client.write("Client: " + message + "\n");
         });
@@ -27,7 +27,6 @@ const server = net.createServer((socket) => {
 
         console.log("Client disconnected!");
 
-        // Remove disconnected client
         const index = clients.indexOf(socket);
 
         if (index !== -1) {

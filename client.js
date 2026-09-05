@@ -1,4 +1,5 @@
 const net = require("net");
+const readline = require("readline");
 
 const client = net.createConnection({
     host: "localhost",
@@ -6,14 +7,31 @@ const client = net.createConnection({
 }, () => {
 
     console.log("Connected to TCP Server!");
+    console.log("You can start chatting...\n");
 
-    client.write("Hello Server!");
+});
+
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
+rl.on("line", (message) => {
+
+    client.write(message);
+
 });
 
 client.on("data", (data) => {
-    console.log("Server says:", data.toString());
+
+    console.log(data.toString().trim());
+
 });
 
 client.on("end", () => {
+
     console.log("Disconnected from server.");
+
+    rl.close();
+
 });
