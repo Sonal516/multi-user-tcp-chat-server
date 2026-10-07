@@ -1,4 +1,11 @@
 {
+  "scripts": {
+    "tcp": "node ./server.js",
+    "bridge": "node ./bridge-server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
   "devDependencies": {
     "nodemon": "^3.1.14"
   }
